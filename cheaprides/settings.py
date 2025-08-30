@@ -18,7 +18,7 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 load_dotenv()
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["cheaprides-backend.onrender.com", "localhost", "127.0.0.1"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -124,15 +124,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'cars.authentication.CookieJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
 
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'cars.authentication.CookieJWTAuthentication',
-    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'cars.authentication.CookieJWTAuthentication',
+    # ),
 }
 
 # JWT settings
@@ -142,14 +143,22 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
 }
 
+SESSION_COOKIE_SECURE = True       # Cookies only sent via HTTPS
+CSRF_COOKIE_SECURE = True          # CSRF cookie only via HTTPS
+SESSION_COOKIE_SAMESITE = 'None'   # Required for cross-site cookies
+CSRF_COOKIE_SAMESITE = 'None'
+
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://cheapridesgh.vercel.app",  
 ]
 
-# CORS_ALLOW_HEADERS = list(default_headers) + [
-#     'Authorization',
-# ]
-
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://cheapridesgh.vercel.app",
+    "http://localhost:3000",
+]
+

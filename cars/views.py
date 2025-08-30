@@ -59,6 +59,8 @@ def register_view(request):
     username = request.data.get('username')
     email = request.data.get('email')
     password = request.data.get('password')
+    firstname = request.data.get('first_name')
+    lastname= request.data.get('last_name')
     
     if User.objects.filter(username=username).exists():
         return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
@@ -66,7 +68,7 @@ def register_view(request):
     if User.objects.filter(email=email).exists():
         return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
     
-    user = User.objects.create_user(username=username, email=email, password=password)
+    user = User.objects.create_user(username=username, email=email, password=password, firstname=firstname, lastname=lastname)
     refresh = RefreshToken.for_user(user)
     
     return Response({

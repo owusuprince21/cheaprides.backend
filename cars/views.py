@@ -68,7 +68,8 @@ def register_view(request):
     if User.objects.filter(email=email).exists():
         return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
     
-    user = User.objects.create_user(username=username, email=email, password=password, firstname=firstname, lastname=lastname)
+    user = User.objects.create_user(username=username, email=email, password=password,     first_name=firstname,
+    last_name=lastname)
     refresh = RefreshToken.for_user(user)
     
     return Response({
@@ -77,7 +78,9 @@ def register_view(request):
         'user': {
             'id': user.id,
             'username': user.username,
-            'email': user.email
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name
         }
     })
 

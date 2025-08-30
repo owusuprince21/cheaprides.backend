@@ -30,8 +30,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'cars',
+    'cars', 
+
 ]
+
+SESSION_COOKIE_SECURE = not DEBUG 
+CSRF_COOKIE_SECURE = not DEBUG 
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -143,10 +147,10 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
 }
 
-SESSION_COOKIE_SECURE = True       # Cookies only sent via HTTPS
-CSRF_COOKIE_SECURE = True          # CSRF cookie only via HTTPS
-SESSION_COOKIE_SAMESITE = 'None'   # Required for cross-site cookies
-CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False   
 
 # CORS settings
 CORS_ALLOWED_ORIGINS = [

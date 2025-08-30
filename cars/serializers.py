@@ -10,9 +10,17 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CarImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()  # override default
+
     class Meta:
         model = CarImage
         fields = ['id', 'image', 'caption']
+
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url  # full Cloudinary URL
+        return None
+
 
 class CarListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +34,7 @@ class CarListSerializer(serializers.ModelSerializer):
 class CarDetailSerializer(serializers.ModelSerializer):
     additional_images = CarImageSerializer(many=True, read_only=True)
     features_list = serializers.SerializerMethodField()
-    # main_image = serializers.SerializerMethodField() 
+    main_image = serializers.SerializerMethodField()  # override default 
 
     class Meta:
         model = Car
@@ -38,8 +46,15 @@ class CarDetailSerializer(serializers.ModelSerializer):
             'features', 'features_list', 'additional_images', 'created_at'
         ]
 
+
     def get_features_list(self, obj):
         return obj.get_features_list()
+
+    def get_main_image(self, obj):
+        # If using CloudinaryField
+        if obj.main_image:
+            return obj.main_image.url
+        return None
 
 class CarCreateSerializer(serializers.ModelSerializer):
     class Meta:

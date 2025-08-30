@@ -126,7 +126,7 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
 
 # Cloudinary config
-CLOUDINARY_URL = config("CLOUDINARY_URL")  # Add this in Render env vars
+CLOUDINARY_URL = config("CLOUDINARY_URL")  
 
 # Use Cloudinary for media files
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

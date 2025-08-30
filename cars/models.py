@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
-from cloudinary.forms import CloudinaryFileField
+from cloudinary.models import CloudinaryField
 
 class Car(models.Model):
     FUEL_CHOICES = [

@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from cloudinary.forms import CloudinaryFileField
 
 class Car(models.Model):
     FUEL_CHOICES = [
@@ -62,7 +63,7 @@ class Car(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    main_image = models.ImageField(upload_to='cars/images/')
+    main_image = CloudinaryField('image', folder='cars/images', blank=True, null=True)
     
     # Car specifications
     make = models.CharField(max_length=100, choices=CAR_BRAND)
@@ -110,7 +111,7 @@ class Car(models.Model):
 
 class CarImage(models.Model):
     car = models.ForeignKey(Car, related_name='additional_images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='cars/images/')
+    image = CloudinaryField('image', folder='cars/images', blank=True, null=True)
     caption = models.CharField(max_length=200, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     

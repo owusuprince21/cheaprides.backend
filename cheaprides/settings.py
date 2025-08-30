@@ -17,13 +17,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 load_dotenv()
 
-# cloudinary.config(
-#     secure=True  # makes sure all media loads via https
-# )
+cloudinary.config(
+    secure=True  # makes sure all media loads via https
+)
 
 ALLOWED_HOSTS = ["cheaprides-backend.onrender.com", "localhost", "127.0.0.1"]
 
@@ -38,8 +38,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     'cars', 
-    # 'cloudinary',
-    # 'cloudinary_storage',
+    'cloudinary',
+    'cloudinary_storage',
 
 ]
 
@@ -122,17 +122,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/var/data'  # matches your mounted disk
-# STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = '/var/data'  # matches your mounted disk
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles") 
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# # Cloudinary config
-# CLOUDINARY_URL = config("CLOUDINARY_URL")  
 
-# # Use Cloudinary for media files
-# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# Media files (Cloudinary)
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+# Cloudinary URL from Render env variables
+CLOUDINARY_URL = config("CLOUDINARY_URL")
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

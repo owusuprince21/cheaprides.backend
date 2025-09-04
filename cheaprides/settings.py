@@ -12,24 +12,18 @@ import cloudinary.api
 import firebase_admin
 from firebase_admin import credentials
 
-# Check if running with env variable (Render)
-firebase_config = os.environ.get("FIREBASE_CONFIG")
+firebase_credentials_json = os.getenv("FIREBASE_CREDENTIALS")
 
-if firebase_config:
+if firebase_credentials_json:
     try:
-        # Parse the JSON string from the environment variable
-        firebase_config_dict = json.loads(firebase_config)
-
-        # Handle private_key newlines
-        firebase_config_dict["private_key"] = firebase_config_dict["private_key"].replace("\\n", "\n")
-
-        cred = credentials.Certificate(firebase_config_dict)
+        cred_dict = json.loads(firebase_credentials_json)
+        cred = credentials.Certificate(cred_dict)
         firebase_admin.initialize_app(cred)
-        print("✅ Firebase initialized with Render environment variable")
+        print("✅ Firebase initialized successfully")
     except Exception as e:
         print(f"⚠️ Firebase initialization failed: {e}")
 else:
-    print("⚠️ FIREBASE_CONFIG not found in environment. Skipping Firebase init.")
+    print("⚠️ No Firebase credentials found in environment variables")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

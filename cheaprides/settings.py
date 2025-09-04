@@ -168,6 +168,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://cheapridesgh.vercel.app",  
+    "https://cheapridesgh.com",
+    "https://www.cheapridesgh.com",
+
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -175,5 +178,8 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = [
     "https://cheapridesgh.vercel.app",
     "http://localhost:3000",
+    "https://cheapridesgh.com",
+    "https://www.cheapridesgh.com",
+
 ]
 

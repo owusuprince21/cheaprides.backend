@@ -1,11 +1,28 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
+# myapp/authentication.py
+from firebase_admin import auth as firebase_auth
+from rest_framework.authentication import BaseAuthentication
+from rest_framework import exceptions
 
-class CookieJWTAuthentication(JWTAuthentication):
+class FirebaseAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        # Try to get the JWT from cookies instead of the Authorization header
-        access_token = request.COOKIES.get('access_token')
-        if access_token is None:
-            return None  # No token, DRF will move to the next authentication class
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        if not auth_header:
+            return None
+        
+        try:
+            id_token = auth_header.split(" ").pop()
+            decoded_token = firebase_auth.verify_id_token(id_token)
+        except Exception:
+            raise exceptions.AuthenticationFailed("Invalid Firebase ID token")
 
-        validated_token = self.get_validated_token(access_token)
-        return self.get_user(validated_token), validated_token
+        uid = decoded_token["uid"]
+        email = decoded_token.get("email")
+        name = decoded_token.get("name", "")
+
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+
+        user, _ = User.objects.get_or_create(email=email, defaults={"username": uid, "first_name": name.split(" ")[0], "last_name": " ".join(name.split(" ")[1:])})
+        
+        return (user, None)
+

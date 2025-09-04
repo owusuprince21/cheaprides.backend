@@ -9,6 +9,20 @@ from dotenv import load_dotenv
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+import firebase_admin
+from firebase_admin import credentials
+
+# Firebase Admin SDK
+FIREBASE_CREDENTIALS_PATH = os.path.join(
+    BASE_DIR, 
+    "firebase/cheaprides-85e65-firebase-adminsdk-fbsvc-8e6152cb80.json"
+)
+
+if os.path.exists(FIREBASE_CREDENTIALS_PATH):
+    cred = credentials.Certificate(FIREBASE_CREDENTIALS_PATH)
+    firebase_admin.initialize_app(cred)
+else:
+    print("Firebase credentials file not found. Skipping Firebase init.")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -141,13 +155,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'cars.authentication.CookieJWTAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'cars.authentication.CookieJWTAuthentication',
+        'cars.authentication.FirebaseAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
-
+    'DEFAULT_PAGINATION_CLASS': None,
+    'PAGE_SIZE': None,
 
 }
 

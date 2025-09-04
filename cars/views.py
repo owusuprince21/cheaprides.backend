@@ -8,10 +8,15 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import user_passes_test
 from .models import Car, CarImage
 from .serializers import CarListSerializer, CarDetailSerializer, UserSerializer
+from firebase_admin import auth as firebase_auth
+import json
+from django.views.decorators.csrf import csrf_exempt
+
 
 class CarListView(generics.ListAPIView):
     serializer_class = CarListSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
     
     def get_queryset(self):
         return Car.objects.filter(is_available=True)
@@ -19,6 +24,7 @@ class CarListView(generics.ListAPIView):
 class RecentCarsView(generics.ListAPIView):
     serializer_class = CarListSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
     
     def get_queryset(self):
         return Car.objects.filter(is_available=True)[:8]
@@ -26,6 +32,7 @@ class RecentCarsView(generics.ListAPIView):
 class FeaturedCarsView(generics.ListAPIView):
     serializer_class = CarListSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
     
     def get_queryset(self):
         return Car.objects.filter(is_available=True, is_featured=True)
@@ -33,6 +40,7 @@ class FeaturedCarsView(generics.ListAPIView):
 class CarDetailView(generics.RetrieveAPIView):
     serializer_class = CarDetailSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
     lookup_field = 'slug'
     
     def get_queryset(self):
@@ -41,6 +49,7 @@ class CarDetailView(generics.RetrieveAPIView):
 class RelatedCarsView(generics.ListAPIView):
     serializer_class = CarListSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []
     
     def get_queryset(self):
         car_slug = self.kwargs.get('slug')
@@ -53,70 +62,55 @@ class RelatedCarsView(generics.ListAPIView):
         except Car.DoesNotExist:
             return Car.objects.none()
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def register_view(request):
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
-    firstname = request.data.get('first_name')
-    lastname= request.data.get('last_name')
-    
-    if User.objects.filter(username=username).exists():
-        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if User.objects.filter(email=email).exists():
-        return Response({'error': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    user = User.objects.create_user(username=username, email=email, password=password,     first_name=firstname,
-    last_name=lastname)
-    refresh = RefreshToken.for_user(user)
-    
-    return Response({
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-        'user': {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.last_name
-        }
-    })
+@csrf_exempt
+def send_verification_email(request):
+    if request.method != "POST":
+        return JsonResponse({"success": False, "error": "Only POST allowed"}, status=405)
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login_view(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
-    
-    user = authenticate(username=username, password=password)
-    if user:
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user': {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'is_staff': user.is_staff,
-                'is_superuser': user.is_superuser
-            }
-        })
-    
-    return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
     try:
-        refresh_token = request.data.get('refresh')
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        return Response({'message': 'Successfully logged out'})
+        data = json.loads(request.body)
+        email = data.get("email")
+        if not email:
+            return JsonResponse({"success": False, "error": "Email is required"}, status=400)
+
+        action_code_settings = firebase_auth.ActionCodeSettings(
+            url="https://cheaprides.com/",   # your live frontend domain
+            handle_code_in_app=True
+        )
+
+        link = firebase_auth.generate_email_verification_link(email, action_code_settings)
+
+        send_mail(
+            subject="Verify your email",
+            message=f"Click this link to verify your account: {link}",
+            from_email=None,  # uses EMAIL_HOST_USER
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        return JsonResponse({"success": True, "message": "Verification email sent."})
+
     except Exception as e:
-        return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+    
+        
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def firebase_login(request):
+    token = request.data.get("token")
+    try:
+        decoded = firebase_auth.verify_id_token(token)
+        uid = decoded["uid"]
+        name = decoded.get("name", "")
+        email = decoded.get("email", "")
+
+        return Response({
+            "uid": uid,
+            "name": name,
+            "email": email,
+        })
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
